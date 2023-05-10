@@ -621,7 +621,20 @@ def save_image(image, path, basename, seed=None, prompt=None, extension='png', i
             _atomically_save_image(image, fullfn_without_extension, ".jpg")
         except Exception as e:
             errors.display(e, "saving image as downscaled JPG")
-
+            
+    if opts.save_stripped_jpg:
+        directory_name = os.path.dirname(fullfn)
+        temp_tokens = re.split(re.escape('\\'), fullfn)
+        stripped_fn = temp_tokens[-1]
+        seed_tokens = stripped_fn.split('-')
+        seed_only_fn = f'{seed_tokens[0]}-{seed_tokens[1]}'
+        file_name, file_extension = os.path.splitext(fullfn)
+        stripped_dir = os.path.join(directory_name, "stripped")
+        stripped_fullfn = os.path.join(stripped_dir,seed_only_fn)
+        if not os.path.exists(stripped_dir):
+            os.makedirs(stripped_dir)
+        image.save(stripped_fullfn.replace(".png","") + "-str.jpg", quality=opts.jpeg_quality)
+            
     if opts.save_txt and info is not None:
         txt_fullfn = f"{fullfn_without_extension}.txt"
         with open(txt_fullfn, "w", encoding="utf8") as file:
